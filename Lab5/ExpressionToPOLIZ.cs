@@ -4,6 +4,7 @@ using System.Text;
 
 public class ExpressionToPOLIZ
 {
+    // Определение приоритета операторов
     private static int GetPriority(char op)
     {
         switch (op)
@@ -19,30 +20,37 @@ public class ExpressionToPOLIZ
         }
     }
 
+    // Проверка, является ли символ оператором
     private static bool IsOperator(char c)
     {
         return c == '+' || c == '-' || c == '*' || c == '/' || c == '^';
     }
 
+    // Проверка, является ли символ цифрой
     private static bool IsDigit(char c)
     {
         return c >= '0' && c <= '9';
     }
 
+    // Главная функция: перевод в ПОЛИЗ
     public static string ConvertToPOLIZ(string expression)
     {
+        // Проверка на пустое выражение
         if (string.IsNullOrWhiteSpace(expression))
             throw new ArgumentException("Выражение пустое");
 
+        // Удаляем пробелы
         string expr = expression.Replace(" ", "");
-        Stack<char> stack = new Stack<char>();
-        StringBuilder output = new StringBuilder();
+        Stack<char> stack = new Stack<char>();      // Стек для операторов
+        StringBuilder output = new StringBuilder(); // Выходная строка ПОЛИЗ
         int i = 0;
 
+        // Основной цикл обработки
         while (i < expr.Length)
         {
             char c = expr[i];
 
+            // Если цифра - читаем всё число
             if (IsDigit(c))
             {
                 while (i < expr.Length && IsDigit(expr[i]))
@@ -50,13 +58,15 @@ public class ExpressionToPOLIZ
                     output.Append(expr[i]);
                     i++;
                 }
-                output.Append(' ');
+                output.Append(' '); // Разделитель
                 continue;
             }
+            // Открывающая скобка - в стек
             else if (c == '(')
             {
                 stack.Push(c);
             }
+            // Закрывающая скобка - выталкиваем до '('
             else if (c == ')')
             {
                 while (stack.Count > 0 && stack.Peek() != '(')
@@ -69,6 +79,7 @@ public class ExpressionToPOLIZ
                 else
                     throw new ArgumentException("Несоответствие скобок");
             }
+            // Оператор - проверяем приоритет
             else if (IsOperator(c))
             {
                 while (stack.Count > 0 && stack.Peek() != '(' && GetPriority(stack.Peek()) >= GetPriority(c))
@@ -78,6 +89,7 @@ public class ExpressionToPOLIZ
                 }
                 stack.Push(c);
             }
+            // Недопустимый символ
             else
             {
                 throw new ArgumentException($"Недопустимый символ: {c}");
@@ -85,6 +97,7 @@ public class ExpressionToPOLIZ
             i++;
         }
 
+        // Выталкиваем оставшиеся операторы из стека
         while (stack.Count > 0)
         {
             char op = stack.Pop();
